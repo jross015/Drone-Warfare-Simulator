@@ -1,0 +1,80 @@
+#include <iostream>
+#include <random>
+
+///Sets minimum and maximum z value, maximum range, maximum speed, and enemy chance
+const double MinZ = 0;
+const double MaxZ = 6;
+const double MaxRange = 15;
+const double MaxSpeed = 10;
+const double EnemyChance = 0.1;
+
+class Drone {
+    /// Sets payload and x, y, and z values
+public:
+  double x, y, z;
+  bool payload;
+
+  Drone() : x(0), y(0), z(0), payload(true) {}
+/// Calculates drone distance from origin
+  double DistanceFromOrigin() const {
+    return std::sqrt(x * x + y * y + z * z);
+  }
+///Allows drone to move a random amount
+  void move() {
+    std::random_device RandomDevice;
+    std::mt19937 gen(RandomDevice());
+    std::uniform_real_distribution<> dis(-1, 1);
+
+    /// Generates random drone movement in a random direction.
+    double Directionx = dis(gen);
+    double Directiony = dis(gen);
+    double Directionz = dis(gen);
+
+    /// Checks if the drone is within range after the move.
+    if (DistanceFromOrigin() + std::sqrt(Directionx * Directionx + Directiony * Directiony + Directionz * Directionz) > MaxRange) {
+      /// If the drone is out of range, return to the origin.
+      x = 0;
+      y = 0;
+      z = 0;
+    } else {
+      /// Else, update the drone's position.
+      x += Directionx;
+      y += Directiony;
+      z += Directionz;
+
+      /// Checks if the drone encountered an enemy.
+      std::uniform_real_distribution<> Enemy_dis(0, 1);
+      if (Enemy_dis(gen) < EnemyChance) {
+        /// If the drone encountered an enemy, return to the origin at maximum speed.
+        std::cout << "Drone encountered the enemy. Weapon fired." << std::endl;
+        x = 0;
+        y = 0;
+        z = 0;
+        payload = false;
+      }
+    }
+  }
+};
+///Main function
+int main() {
+    ///Prompts user to choose how many drones they want displayed
+  std::cout << "Deploy how many drones?" << std::endl;
+  int NumberofDrones;
+  std::cin >> NumberofDrones;
+
+  std::vector<Drone> drones(NumberofDrones);
+
+  std::cout << "Deploying all drones" << std::endl;
+///Displays and increments time steps
+  for (int t = 0; t < 20; ++t) {
+    std::cout << "Time Step " << t << std::endl;
+///Displays drone steps per time step
+    for (int i = 0; i < NumberofDrones; ++i) {
+      Drone& drone = drones[i];
+      std::cout << "Drone " << i << ": " << "(" << drone.x << ", " << drone.y << ", " << drone.z << ")" << std::endl;
+      drone.move();
+    }
+  }
+
+  return 0;
+}
